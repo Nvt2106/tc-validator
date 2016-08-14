@@ -52,13 +52,13 @@ Validator.Date.nightsBetweenMoments = function(fromDateMoment, toDateMoment) {
 Validator.Date.nightsBetweenDates = function(fromDate, toDate) {
   var fromDateMoment = moment(fromDate);
   var toDateMoment = moment(toDate);
-  return nightsBetweenMoments(fromDateMoment, toDateMoment);
+  return Validator.Date.nightsBetweenMoments(fromDateMoment, toDateMoment);
 }
 
 Validator.Date.nightsBetweenDateStrings = function(fromDateString, toDateString) {
   var fromDateMoment = moment(fromDateString, 'YYYY-MM-DD');
   var toDateMoment = moment(toDateString, 'YYYY-MM-DD');
-  return nightsBetweenMoments(fromDateMoment, toDateMoment);
+  return Validator.Date.nightsBetweenMoments(fromDateMoment, toDateMoment);
 }
 
 Validator.Date.getTodayString = function() {
@@ -79,19 +79,19 @@ Validator.Date.isSmallerOrEqualDate = function(dateString, anotherDateString) {
 }
 
 Validator.Date.isPastDate = function(dateString) {
-  return isSmallerDate(dateString, getTodayString());
+  return Validator.Date.isSmallerDate(dateString, Validator.Date.getTodayString());
 }
 
 Validator.Date.isPastOrNowDate = function(dateString) {
-  return isSmallerOrEqualDate(dateString, getTodayString());
+  return Validator.Date.isSmallerOrEqualDate(dateString, Validator.Date.getTodayString());
 }
 
 Validator.Date.isFutureDate = function(dateString) {
-  return isSmallerDate(getTodayString(), dateString);
+  return Validator.Date.isSmallerDate(Validator.Date.getTodayString(), dateString);
 }
 
 Validator.Date.isNowOrFutureDate = function(dateString) {
-  return isSmallerOrEqualDate(getTodayString(), dateString);
+  return Validator.Date.isSmallerOrEqualDate(Validator.Date.getTodayString(), dateString);
 }
 
 Validator.Date.getDateString = function(dateTimeString) {
