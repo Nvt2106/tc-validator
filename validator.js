@@ -1,4 +1,11 @@
+// TODO: define error code
+// And validation error will be { code, name, field, msg } rather than only msg
+
 'use strict';
+
+if (typeof require !== 'undefined') {
+	var moment = require('moment');
+}
 
 var Validator = Validator || {};
 
@@ -13,6 +20,87 @@ Validator.isString = function(myVar) {
 Validator.isArray = function(myVar) {
 	return Array.isArray(myVar);
 }
+
+Validator.Date = Validator.Date || {};
+
+Validator.Date.getFormattedDate = function(date) {
+  var m_names = new Array("Jan", "Feb", "Mar", 
+    "Apr", "May", "Jun", "Jul", "Aug", "Sep", 
+    "Oct", "Nov", "Dec");
+  var year = date.getFullYear();
+  var month = (1 + date.getMonth());
+  var day = date.getDate().toString();
+  day = day.length > 1 ? day : '0' + day;
+  return day + '-' + m_names[month] + '-' + year;
+}
+
+Validator.Date.isDateBetween = function(date, fromDate, toDate) {
+  var result = true;
+  if (fromDate) {
+    result = (date >= fromDate);
+    if (result && toDate) {
+      result = (date <= toDate);
+    }
+  }
+  return result;
+}
+
+Validator.Date.nightsBetweenMoments = function(fromDateMoment, toDateMoment) {
+  return toDateMoment.diff(fromDateMoment, 'days');
+}
+
+Validator.Date.nightsBetweenDates = function(fromDate, toDate) {
+  var fromDateMoment = moment(fromDate);
+  var toDateMoment = moment(toDate);
+  return nightsBetweenMoments(fromDateMoment, toDateMoment);
+}
+
+Validator.Date.nightsBetweenDateStrings = function(fromDateString, toDateString) {
+  var fromDateMoment = moment(fromDateString, 'YYYY-MM-DD');
+  var toDateMoment = moment(toDateString, 'YYYY-MM-DD');
+  return nightsBetweenMoments(fromDateMoment, toDateMoment);
+}
+
+Validator.Date.getTodayString = function() {
+  var today = new Date();
+  return today.getFullYear() + '-' + (1 + today.getMonth()) + '-' + today.getDate();
+}
+
+Validator.Date.isSmallerDate = function(dateString, anotherDateString) {
+  var dateMoment = moment(dateString, 'YYYY-MM-DD');
+  var anotherDateMoment = moment(anotherDateString, 'YYYY-MM-DD');
+  return (dateMoment.diff(anotherDateMoment) < 0);
+}
+
+Validator.Date.isSmallerOrEqualDate = function(dateString, anotherDateString) {
+  var dateMoment = moment(dateString, 'YYYY-MM-DD');
+  var anotherDateMoment = moment(anotherDateString, 'YYYY-MM-DD');
+  return (dateMoment.diff(anotherDateMoment) <= 0);
+}
+
+Validator.Date.isPastDate = function(dateString) {
+  return isSmallerDate(dateString, getTodayString());
+}
+
+Validator.Date.isPastOrNowDate = function(dateString) {
+  return isSmallerOrEqualDate(dateString, getTodayString());
+}
+
+Validator.Date.isFutureDate = function(dateString) {
+  return isSmallerDate(getTodayString(), dateString);
+}
+
+Validator.Date.isNowOrFutureDate = function(dateString) {
+  return isSmallerOrEqualDate(getTodayString(), dateString);
+}
+
+Validator.Date.getDateString = function(dateTimeString) {
+  if (dateTimeString) {
+    return (dateTimeString.substring(0, 10));
+  }
+  return undefined;
+}
+
 
 Validator.StringRule = function(fieldName, displayText, required, minLength, maxLength) {
 	return {
@@ -102,7 +190,7 @@ Validator.validate = function(obj, rules) {
 
 	// ++ Internal helper functions
 	function isNull(myVar) {
-		return (myVar == undefined || myVar == null || myVar.length == 0);
+		return (myVar == undefined || myVar.length == 0);
 	}
 
 	function validateString(fieldDisplayText, fieldValue, required, minLength, maxLength) {
@@ -153,20 +241,26 @@ Validator.validate = function(obj, rules) {
 	      msg = fieldDisplayText + ' is required.';
 	    }    
 	  } else {
-	  	// TODO
-	    // console.log('date string: ' + fieldValue);
-	    // var dateMoment = moment(fieldValue, 'YYYY-MM-DD');
-	    // console.log(dateMoment);
-	    // if (!dateMoment.isValid()) {
-	    //   msg = fieldDisplayText + ' is not valid.'
-	    // }
+	  	var dateMoment = moment(fieldValue, 'YYYY-MM-DD');
+	    if (!dateMoment.isValid()) {
+	      msg = fieldDisplayText + ' is not valid.'
+	    } else {
+	    	if (minValue && Validator.Date.isSmallerDate(fieldValue, minValue)) {
+	    		msg = fieldDisplayText + ' must not be smaller than ' + minValue;
+
+	    	} else if (maxValue && Validator.Date.isSmallerDate(maxValue, fieldValue)) {
+	    		msg = fieldDisplayText + ' must not be greater than ' + maxValue;
+	    	}
+	    }
 	  }
 	  return msg;
 	}
 
 	function validateDateRange(rangeDisplayText, minValue, maxValue) {
 	  var msg = '';
-	  // TODO
+	  if (Validator.Date.isSmallerDate(maxValue, minValue)) {
+	  	msg = 'Min date of ' + rangeDisplayText + ' must not be greater than max date.';
+	  }
 	  return msg;
 	}
 
