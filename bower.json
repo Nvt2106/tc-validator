@@ -1,0 +1,15 @@
+{
+  "name": "tc-validator",
+  "homepage": "https://github.com/Nvt2106/tc-validator",
+  "authors": [
+    "Tuan Nguyen <nvt2106@yahoo.com>"
+  ],
+  "description": "Validate an entity",
+  "main": "validator.js",
+  "keywords": [
+    "validator",
+    "validation",
+    "entity"
+  ],
+  "license": "MIT"
+}
