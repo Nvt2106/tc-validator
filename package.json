@@ -1,0 +1,23 @@
+{
+  "name": "tc-validator",
+  "version": "1.0.0",
+  "description": "Validate entity",
+  "main": "validator.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nvt2106/tc-validator.git"
+  },
+  "keywords": [
+    "validation",
+    "validator"
+  ],
+  "author": "Tuan Nguyen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Nvt2106/tc-validator/issues"
+  },
+  "homepage": "https://github.com/Nvt2106/tc-validator#readme"
+}
