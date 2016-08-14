@@ -269,7 +269,7 @@ Validator.validate = function(obj, rules) {
 
 				case 'credit':
 					msg = validateCreditCardNumber(displayText, getFieldValue(obj, rule.field_name), rule.required);
-					break:
+					break;
 
 				case 'func':
 					msg = validateByFunction(rule.function_name, obj);
