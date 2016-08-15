@@ -1,6 +1,3 @@
-// TODO: define error code
-// And validation error will be { code, name, field, msg } rather than only msg
-
 'use strict';
 
 if (typeof require !== 'undefined') {
