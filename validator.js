@@ -186,6 +186,32 @@ Validator.FunctionRule = function(functionName) {
 	}
 }
 
+// ++ Error code
+var ErrorCodes = {
+	UNKNOWN:           		1000,
+	MANDATORY_FIELD: 		1001,
+	MIN_LENGTH_VIOLATED: 	1002,
+	MAX_LENGTH_VIOLATED: 	1003,
+	INVALID_NUMBER: 		1004,
+	MIN_VALUE_VIOLATED: 	1005,
+	MAX_VALUE_VIOLATED: 	1006,
+	INVALID_NUMBER_RANGE:   1007,
+	INVALID_DATE:           1008,
+	INVALID_DATE_RANGE:     1009,
+	INVALID_CARD_NUMBER:    1010
+};
+
+Validator.ErrorCodes = ErrorCodes;
+// -- Error code
+
+Validator.buildErrorObject = function(code, msg, fieldName) {
+	return {
+		code: code,
+		msg: msg,
+		field_name: fieldName
+	};
+}
+
 Validator.validate = function(obj, rules) {
 
 	// ++ Internal helper functions
@@ -195,96 +221,126 @@ Validator.validate = function(obj, rules) {
 
 	function validateString(fieldDisplayText, fieldValue, required, minLength, maxLength) {
 	  var msg = '';
+	  var code = '';
 	  if (required) {
 	    if (fieldValue == undefined || fieldValue.length == 0) {
+	      code = ErrorCodes.MANDATORY_FIELD;
 	      msg = fieldDisplayText + ' is required.';
+
 	    } else if (minLength && minLength > 0 && fieldValue.length < minLength) {
+	      code = ErrorCodes.MIN_LENGTH_VIOLATED;
 	      msg = 'Length of ' + fieldDisplayText + ' must be at least ' + minLength + ' char(s).';
+
 	    } else if (maxLength && maxLength > 0 && fieldValue.length > maxLength) {
+	      code = ErrorCodes.MAX_LENGTH_VIOLATED;
 	      msg = 'Length of ' + fieldDisplayText + ' must not be greater than ' + maxLength + ' char(s).';
 	    }
 	  }
-	  return msg;
+	  return Validator.buildErrorObject(code, msg);
 	}
 
 	function validateNumber(fieldDisplayText, fieldValue, required, minValue, maxValue) {
 	  var msg = '';
+	  var code = '';
 	  if (required && (fieldValue == undefined || fieldValue.length == 0)) {
+	  	code = ErrorCodes.MANDATORY_FIELD;
 	    msg = fieldDisplayText + ' is required.';
+
 	  } else if (fieldValue && fieldValue.length > 0) {
 	    if (isNaN(fieldValue)) {
-	      msg = fieldDisplayText + ' must be a number.';
+	    	code = ErrorCodes.INVALID_NUMBER;
+	    	msg = fieldDisplayText + ' must be a number.';
+
 	    } else {
 	      var number = parseFloat(fieldValue);
 	      if (minValue != undefined && number < minValue) {
+	      	code = ErrorCodes.MIN_VALUE_VIOLATED;
 	        msg = fieldDisplayText + ' must be at least ' + minValue + '.';
+
 	      } else if (maxValue != undefined && number > maxValue) {
+	      	code = ErrorCodes.MAX_VALUE_VIOLATED;
 	        msg = fieldDisplayText + ' must not be greater than ' + maxValue + '.';
 	      }
 	    }
 	  }
-	  return msg;
+	  return Validator.buildErrorObject(code, msg);
 	}
 
 	function validateNumberRange(rangeDisplayText, minValue, maxValue) {
 	  var msg = '';
+	  var code = '';
 	  if (minValue != undefined && maxValue != undefined && minValue > maxValue) {
+	  	code = ErrorCodes.INVALID_NUMBER_RANGE;
 	    msg = 'Min value of ' + rangeDisplayText + ' must not be greater than max value.';
 	  }
-	  return msg;
+	  return Validator.buildErrorObject(code, msg);
 	}
 
 	function validateDate(fieldDisplayText, fieldValue, required, minValue, maxValue) {
 	  var msg = '';
+	  var code = '';
 	  if (fieldValue == undefined || fieldValue.length == 0) {
 	    if (required) {
+	    	code = ErrorCodes.MANDATORY_FIELD;
 	      msg = fieldDisplayText + ' is required.';
 	    }    
 	  } else {
 	  	var dateMoment = moment(fieldValue, 'YYYY-MM-DD');
 	    if (!dateMoment.isValid()) {
+	    	code = ErrorCodes.INVALID_DATE;
 	      msg = fieldDisplayText + ' is not valid.'
+
 	    } else {
 	    	if (minValue && Validator.Date.isSmallerDate(fieldValue, minValue)) {
+	    		code = ErrorCodes.MIN_VALUE_VIOLATED;
 	    		msg = fieldDisplayText + ' must not be smaller than ' + minValue;
 
 	    	} else if (maxValue && Validator.Date.isSmallerDate(maxValue, fieldValue)) {
+	    		code = ErrorCodes.MAX_VALUE_VIOLATED;
 	    		msg = fieldDisplayText + ' must not be greater than ' + maxValue;
 	    	}
 	    }
 	  }
-	  return msg;
+	  return Validator.buildErrorObject(code, msg);
 	}
 
 	function validateDateRange(rangeDisplayText, minValue, maxValue) {
 	  var msg = '';
+	  var code = '';
 	  if (Validator.Date.isSmallerDate(maxValue, minValue)) {
-	  	msg = 'Min date of ' + rangeDisplayText + ' must not be greater than max date.';
+	  	code = ErrorCodes.INVALID_DATE_RANGE;
+	  	msg = rangeDisplayText;
 	  }
-	  return msg;
+	  return Validator.buildErrorObject(code, msg);
 	}
 
 	function validateBoolean(fieldDisplayText, fieldValue) {
 	  var msg = '';
+	  var code = '';
 	  if (isNull(fieldValue)) {
+	  	code = ErrorCodes.MANDATORY_FIELD;
 	    msg = fieldDisplayText + ' is required.';
 	  }
-	  return msg;
+	  return Validator.buildErrorObject(code, msg);
 	}
 
 	function validateArray(fieldDisplayText, fieldValue, required) {
 	  var msg = '';
+	  var code = '';
 	  if (required) {
 	    if (fieldValue == undefined || Array.isArray(fieldValue) == false || fieldValue.length == 0) {
+	    	code = ErrorCodes.MANDATORY_FIELD;
 	      msg = fieldDisplayText + ' is required.';
 	    }
 	  }
-	  return msg;
+	  return Validator.buildErrorObject(code, msg);
 	}
 
 	function validateCreditCardNumber(fieldDisplayText, fieldValue, required) {
 	  var msg = '';
+	  var code = '';
 	  if (required && isNull(fieldValue)) {
+	  	code = ErrorCodes.MANDATORY_FIELD;
 	    msg = fieldDisplayText + ' is required.';
 	  }
 	  if (isNull(msg) && !isNull(fieldValue)) {
@@ -297,14 +353,15 @@ Validator.validate = function(obj, rules) {
 	      || fieldValue.match(cardMaster)) {
 	      //
 	    } else {
+	    	code = ErrorCodes.INVALID_CARD_NUMBER;
 	      msg = fieldDisplayText + ' is not valid format.';
 	    }
 	  }
-	  return msg;
+	  return Validator.buildErrorObject(code, msg);
 	}
 
 	function validateByFunction(functionName, params) {
-	  return functionName(params);
+		return functionName(params);	  	
 	}
 
 	function getFieldValue(obj, fieldName) {
@@ -327,7 +384,7 @@ Validator.validate = function(obj, rules) {
 	}
 	// -- Internal helper functions
 
-	var msg = '';
+	var err = {};
 	if (obj && rules && Array.isArray(rules) && rules.length > 0) {
 		for (var i = 0; i < rules.length; i++) {
 			var rule = rules[i];
@@ -335,49 +392,60 @@ Validator.validate = function(obj, rules) {
 			
 			switch (rule.type) {
 				case 'string':
-					msg = validateString(displayText, getFieldValue(obj, rule.field_name), rule.required, rule.min_length, rule.max_length);
+					err = validateString(displayText, getFieldValue(obj, rule.field_name), rule.required, rule.min_length, rule.max_length);
+					err.field_name = rule.field_name;
 					break;
 
 				case 'number':
-					msg = validateNumber(displayText, getFieldValue(obj, rule.field_name), rule.required, rule.min_value, rule.max_value);
+					err = validateNumber(displayText, getFieldValue(obj, rule.field_name), rule.required, rule.min_value, rule.max_value);
+					err.field_name = rule.field_name;
 					break;
 
 				case 'number_range':
-					msg = validateNumberRange(displayText, getFieldValue(obj, rule.min_field_name), getFieldValue(obj, rule.max_field_name));
+					err = validateNumberRange(displayText, getFieldValue(obj, rule.min_field_name), getFieldValue(obj, rule.max_field_name));
 					break;
 
 				case 'date':
-					msg = validateDate(displayText, getFieldValue(obj, rule.field_name), rule.required, rule.min_value, rule.max_value);
+					err = validateDate(displayText, getFieldValue(obj, rule.field_name), rule.required, rule.min_value, rule.max_value);
+					err.field_name = rule.field_name;
 					break;
 
 				case 'date_range':
+					err = validateDateRange(displayText, getFieldValue(obj, rule.min_field_name), getFieldValue(obj, rule.max_field_name));
 					break;
 
 				case 'bool':
-					msg = validateBoolean(displayText, getFieldValue(obj, rule.field_name));
+					err = validateBoolean(displayText, getFieldValue(obj, rule.field_name));
+					err.field_name = rule.field_name;
 					break;
 
 				case 'array':
-					msg = validateArray(displayText, getFieldValue(obj, rule.field_name), rule.required);
+					err = validateArray(displayText, getFieldValue(obj, rule.field_name), rule.required);
+					err.field_name = rule.field_name;
 					break;
 
 				case 'credit':
-					msg = validateCreditCardNumber(displayText, getFieldValue(obj, rule.field_name), rule.required);
+					err = validateCreditCardNumber(displayText, getFieldValue(obj, rule.field_name), rule.required);
+					err.field_name = rule.field_name;
 					break;
 
 				case 'func':
-					msg = validateByFunction(rule.function_name, obj);
+					err = validateByFunction(rule.function_name, obj);
 					break;
 
 				default:
 					break;
 			}
-			if (msg && msg.length > 0) {
+			if (err && err.msg && err.msg.length > 0) {
 		        break;
 		    }
 		}
 	}
-	return msg;
+	
+	if (err && err.msg && err.msg.length > 0) {
+		return err;
+	}
+	return undefined;
 }
 
 
