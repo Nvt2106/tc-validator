@@ -158,12 +158,14 @@ Validator.BooleanRule = function(fieldName, displayText) {
 	};
 }
 
-Validator.ArrayRule = function(fieldName, displayText, required) {
+Validator.ArrayRule = function(fieldName, displayText, required, minLength, maxLength) {
 	return {
 		type: 'array',
 		field_name: fieldName,
 		display_text: displayText,
-		required: required
+		required: required,
+		min_length: minLength,
+		max_length: maxLength
 	};
 }
 
@@ -195,7 +197,8 @@ var ErrorCodes = {
 	INVALID_NUMBER_RANGE:   1007,
 	INVALID_DATE:           1008,
 	INVALID_DATE_RANGE:     1009,
-	INVALID_CARD_NUMBER:    1010
+	INVALID_CARD_NUMBER:    1010,
+	INVALID_ARRAY:          1011
 };
 
 Validator.ErrorCodes = ErrorCodes;
@@ -321,16 +324,25 @@ Validator.validate = function(obj, rules) {
 	  return Validator.buildErrorObject(code, msg);
 	}
 
-	function validateArray(fieldDisplayText, fieldValue, required) {
-	  var msg = '';
-	  var code = '';
-	  if (required) {
-	    if (fieldValue == undefined || Array.isArray(fieldValue) == false || fieldValue.length == 0) {
-	    	code = ErrorCodes.MANDATORY_FIELD;
-	      msg = fieldDisplayText + ' is required.';
-	    }
-	  }
-	  return Validator.buildErrorObject(code, msg);
+	function validateArray(fieldDisplayText, fieldValue, required, minLength, maxLength) {
+		var msg = '';
+		var code = '';
+		if (fieldValue != undefined && Array.isArray(fieldValue) == false) {
+			code = ErrorCodes.INVALID_ARRAY;
+			msg = fieldDisplayText + ' is not a valid array.';
+		} else if (required) {
+			if (fieldValue == undefined) {
+				code = ErrorCodes.MANDATORY_FIELD;
+				msg = fieldDisplayText + ' is required.';
+			} else if (minLength != undefined && fieldValue.length < minLength) {
+				code = ErrorCodes.MIN_LENGTH_VIOLATED;
+				msg = 'Length of ' + fieldDisplayText + ' must be at least ' + minLength + ' element(s).';
+			} else if (maxLength != undefined && fieldValue.length > maxLength) {
+				code = ErrorCodes.MAX_LENGTH_VIOLATED;
+				msg = 'Length of ' + fieldDisplayText + ' must not be more than ' + maxLength + ' element(s).';
+			}
+		}
+		return Validator.buildErrorObject(code, msg);
 	}
 
 	function validateCreditCardNumber(fieldDisplayText, fieldValue, required) {
@@ -417,7 +429,7 @@ Validator.validate = function(obj, rules) {
 					break;
 
 				case 'array':
-					err = validateArray(displayText, getFieldValue(obj, rule.field_name), rule.required);
+					err = validateArray(displayText, getFieldValue(obj, rule.field_name), rule.required, rule.min_length, rule.max_length);
 					err.field_name = rule.field_name;
 					break;
 
