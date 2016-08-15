@@ -178,6 +178,15 @@ Validator.CreditCardNumberRule = function(fieldName, displayText, required) {
 	};
 }
 
+Validator.ObjectRule = function(fieldName, displayText, required) {
+	return {
+		type: 'obj',
+		field_name: fieldName,
+		display_text: displayText,
+		required: required
+	}
+}
+
 Validator.FunctionRule = function(functionName) {
 	return {
 		type: 'func',
@@ -198,7 +207,8 @@ var ErrorCodes = {
 	INVALID_DATE:           1008,
 	INVALID_DATE_RANGE:     1009,
 	INVALID_CARD_NUMBER:    1010,
-	INVALID_ARRAY:          1011
+	INVALID_ARRAY:          1011,
+	INVALID_OBJECT:         1012
 };
 
 Validator.ErrorCodes = ErrorCodes;
@@ -369,6 +379,20 @@ Validator.validate = function(obj, rules) {
 	  return Validator.buildErrorObject(code, msg);
 	}
 
+	function validateObject(fieldDisplayText, fieldValue, required) {
+		var msg = '';
+		var code = '';
+		if (fieldValue != undefined && typeof fieldValue != 'object') {
+			code = ErrorCodes.INVALID_OBJECT;
+			msg = fieldDisplayText + ' is not an object.';
+
+		} else if (required && fieldValue == undefined) {
+			code = ErrorCodes.MANDATORY_FIELD;
+			msg = fieldDisplayText + ' is required.';
+		}
+		return Validator.buildErrorObject(code, msg);
+	}
+
 	function validateByFunction(functionName, params) {
 		return functionName(params);	  	
 	}
@@ -435,6 +459,11 @@ Validator.validate = function(obj, rules) {
 
 				case 'credit':
 					err = validateCreditCardNumber(displayText, getFieldValue(obj, rule.field_name), rule.required);
+					err.field_name = rule.field_name;
+					break;
+
+				case 'obj':
+					err = validateObject(displayText, getFieldValue(obj, rule.field_name), rule.required);
 					err.field_name = rule.field_name;
 					break;
 
