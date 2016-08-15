@@ -26,3 +26,23 @@ var err = Validator.validate(obj, rules); // err.msg = First Name is required
 obj = { first_name: 'A' };
 
 err = Validator.validate(obj, rules); // err.msg = Length of First Name must be at least 3 char(s)
+
+
+# Rules
+Validator.StringRule = function(fieldName, displayText, required, minLength, maxLength)
+
+Validator.NumberRule = function(fieldName, displayText, required, minValue, maxValue)
+
+Validator.NumberRangeRule = function(minFieldName, maxFieldName, displayText)
+
+Validator.DateRule = function(fieldName, displayText, required, minValue, maxValue)
+
+Validator.DateRangeRule = function(minFieldName, maxFieldName, displayText)
+
+Validator.BooleanRule = function(fieldName, displayText)
+
+Validator.ArrayRule = function(fieldName, displayText, required)
+
+Validator.CreditCardNumberRule = function(fieldName, displayText, required)
+
+Validator.FunctionRule = function(functionObj) // functionObj takes object data as param and return { code, msg, field_name }
