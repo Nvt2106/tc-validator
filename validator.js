@@ -249,7 +249,7 @@ Validator.validate = function(obj, rules) {
 	  } else if (fieldValue && fieldValue.length > 0) {
 	    if (isNaN(fieldValue)) {
 	    	code = ErrorCodes.INVALID_NUMBER;
-	    	msg = fieldDisplayText + ' must be a number.';
+	    	msg = fieldDisplayText + ' is not a valid number.';
 
 	    } else {
 	      var number = parseFloat(fieldValue);
@@ -288,7 +288,7 @@ Validator.validate = function(obj, rules) {
 	  	var dateMoment = moment(fieldValue, 'YYYY-MM-DD');
 	    if (!dateMoment.isValid()) {
 	    	code = ErrorCodes.INVALID_DATE;
-	      msg = fieldDisplayText + ' is not valid.'
+	      msg = fieldDisplayText + ' is not a valid date.'
 
 	    } else {
 	    	if (minValue && Validator.Date.isSmallerDate(fieldValue, minValue)) {
@@ -452,6 +452,7 @@ Validator.validate = function(obj, rules) {
 	}
 	
 	if (err && err.msg && err.msg.length > 0) {
+		console.log(err);
 		return err;
 	}
 	return undefined;
