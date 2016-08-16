@@ -384,10 +384,10 @@ Validator.validate = function(obj, rules) {
 	var err = {};
 	if (obj && rules) {
 		var rules2;
-		if (Validator.isObject(rules)) {
-			rules2 = [ rules ];
-		} else {
+		if (Validator.isArray(rules)) {
 			rules2 = rules;
+		} else {
+			rules2 = [ rules ];
 		}
 
 		for (var i = 0; i < rules2.length; i++) {
