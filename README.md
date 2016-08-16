@@ -50,16 +50,29 @@ Validator.FunctionRule = function(functionObj) // functionObj takes object data 
 
 # Error Codes
 Validator.ErrorCodes = {
+
 	GENERIC:           		1000,
+
 	MANDATORY_FIELD: 		1001,
+
 	MIN_LENGTH_VIOLATED: 	1002,
+
 	MAX_LENGTH_VIOLATED: 	1003,
+
 	INVALID_NUMBER: 		1004,
+
 	MIN_VALUE_VIOLATED: 	1005,
+
 	MAX_VALUE_VIOLATED: 	1006,
+
 	INVALID_NUMBER_RANGE:   1007,
+
 	INVALID_DATE:           1008,
+
 	INVALID_DATE_RANGE:     1009,
+
 	INVALID_CARD_NUMBER:    1010,
+
 	INVALID_ARRAY:          1011
+	
 };

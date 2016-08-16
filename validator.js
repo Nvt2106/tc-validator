@@ -74,7 +74,7 @@ Validator.Date.isNowOrFutureDate = function(dateString) {
 
 // ++ Error code
 var ErrorCodes = {
-	UNKNOWN:           		1000,
+	GENERIC:           		1000,
 	MANDATORY_FIELD: 		1001,
 	MIN_LENGTH_VIOLATED: 	1002,
 	MAX_LENGTH_VIOLATED: 	1003,
