@@ -22,6 +22,10 @@ Validator.isArray = function(myVar) {
 	return Array.isArray(myVar);
 }
 
+Validator.isObject = function(myVar) {
+	return typeof myVar == 'object';
+}
+
 Validator.Date = Validator.Date || {};
 
 Validator.Date.Moment = function(dateString) {
@@ -378,9 +382,16 @@ Validator.validate = function(obj, rules) {
 	}
 	
 	var err = {};
-	if (obj && rules && Validator.isArray(rules) && rules.length > 0) {
-		for (var i = 0; i < rules.length; i++) {
-			var rule = rules[i];
+	if (obj && rules) {
+		var rules2;
+		if (Validator.isObject(rules)) {
+			rules2 = [ rules ];
+		} else {
+			rules2 = rules;
+		}
+
+		for (var i = 0; i < rules2.length; i++) {
+			var rule = rules2[i];
 			
 			switch (rule.type) {
 				case 'number_range':
