@@ -360,7 +360,7 @@ Validator.FunctionRule = function(functionName) {
 	}
 }
 
-Validator.validate = function(obj, rules) {
+Validator.validate = function(obj, rules, returnAllErrors) {
 
 	function getFieldValue(obj, fieldName) {
 	  if (Validator.isString(fieldName)) {
@@ -381,7 +381,7 @@ Validator.validate = function(obj, rules) {
 	  }
 	}
 	
-	var err = {};
+	var errs = [];
 	if (obj && rules) {
 		var rules2;
 		if (Validator.isArray(rules)) {
@@ -392,6 +392,7 @@ Validator.validate = function(obj, rules) {
 
 		for (var i = 0; i < rules2.length; i++) {
 			var rule = rules2[i];
+			var err;
 			
 			switch (rule.type) {
 				case 'number_range':
@@ -410,14 +411,22 @@ Validator.validate = function(obj, rules) {
 					err = rule.validate(getFieldValue(obj, rule.field_name));
 					break;
 			}
+			
 			if (err && err.msg && err.msg.length > 0) {
-		        break;
+		        errs.push(err);
 		    }
 		}
 	}
-	
-	if (err && err.msg && err.msg.length > 0) {
-		return err;
+
+	if (errs && errs.length == 0) {
+		errs = undefined;
+	}
+	if (errs) {
+		if (returnAllErrors == true) {
+			return errs;
+		} else {
+			return errs[0];
+		}
 	}
 	return undefined;
 }
