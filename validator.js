@@ -90,7 +90,9 @@ var ErrorCodes = {
 	INVALID_DATE_RANGE:     1009,
 	INVALID_CARD_NUMBER:    1010,
 	INVALID_ARRAY:          1011,
-	INVALID_OBJECT:         1012
+	INVALID_OBJECT:         1012,
+
+	NO_PERMISSION:         	1100,
 };
 
 Validator.ErrorCodes = ErrorCodes;
