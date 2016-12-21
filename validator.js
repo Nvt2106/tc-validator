@@ -182,7 +182,7 @@ Validator.NumberRangeRule = function(minFieldName, maxFieldName, displayText) {
 		validate: function(minFieldValue, maxFieldValue) {
 		  var msg = '';
 		  var code = '';
-		  if (minFieldValue != undefined && maxFieldValue != undefined && minFieldValue > maxFieldValue) {
+		  if (minFieldValue != undefined && maxFieldValue != undefined && parseFloat(minFieldValue) > parseFloat(maxFieldValue)) {
 		  	code = ErrorCodes.INVALID_NUMBER_RANGE;
 		    msg = 'Min value of ' + displayText + ' must not be greater than max value.';
 		  }
