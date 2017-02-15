@@ -28,8 +28,19 @@ Validator.isObject = function(myVar) {
 
 Validator.Date = Validator.Date || {};
 
+
+Validator.Date.SupportedFormats = [
+	'YYYY-MM-DD', 'MMM DD, YYYY'
+]
 Validator.Date.Moment = function(dateString) {
-	return moment(dateString, 'YYYY-MM-DD');
+	var momentDate;
+	for (var i = 0; i < Validator.Date.SupportedFormats.length; i++) {
+		var oneFormat = Validator.Date.SupportedFormats[i];
+		momentDate = moment.utc(dateString, oneFormat);
+		if (momentDate.isValid())
+			break;
+	}
+	return momentDate;
 }
 
 Validator.Date.isDateBetween = function(date, fromDate, toDate) {
@@ -90,19 +101,18 @@ var ErrorCodes = {
 	INVALID_DATE_RANGE:     1009,
 	INVALID_CARD_NUMBER:    1010,
 	INVALID_ARRAY:          1011,
-	INVALID_OBJECT:         1012,
-
-	NO_PERMISSION:         	1100,
+	INVALID_OBJECT:         1012
 };
 
 Validator.ErrorCodes = ErrorCodes;
 // -- Error code
 
-Validator.buildErrorObject = function(code, msg, fieldName) {
+Validator.buildErrorObject = function(code, msg, fieldName, displayText) {
 	return {
 		code: code,
 		msg: msg,
-		field_name: fieldName
+		field_name: fieldName,
+		display_text: displayText
 	};
 }
 
@@ -131,7 +141,7 @@ Validator.StringRule = function(fieldName, displayText, required, minLength, max
 					msg = 'Length of ' + displayText + ' must not be greater than ' + maxLength + ' char(s).';
 				}
 			}
-			return Validator.buildErrorObject(code, msg, fieldName);
+			return Validator.buildErrorObject(code, msg, fieldName, displayText);
 		}
 	};
 }
@@ -168,7 +178,7 @@ Validator.NumberRule = function(fieldName, displayText, required, minValue, maxV
 		      }
 		    }
 		  }
-		  return Validator.buildErrorObject(code, msg, fieldName);
+		  return Validator.buildErrorObject(code, msg, fieldName, displayText);
 		}
 	};
 }
@@ -182,11 +192,11 @@ Validator.NumberRangeRule = function(minFieldName, maxFieldName, displayText) {
 		validate: function(minFieldValue, maxFieldValue) {
 		  var msg = '';
 		  var code = '';
-		  if (minFieldValue != undefined && maxFieldValue != undefined && parseFloat(minFieldValue) > parseFloat(maxFieldValue)) {
+		  if (minFieldValue != undefined && maxFieldValue != undefined && minFieldValue > maxFieldValue) {
 		  	code = ErrorCodes.INVALID_NUMBER_RANGE;
 		    msg = 'Min value of ' + displayText + ' must not be greater than max value.';
 		  }
-		  return Validator.buildErrorObject(code, msg);
+		  return Validator.buildErrorObject(code, msg, null, displayText);
 		}
 	};
 }
@@ -214,7 +224,11 @@ Validator.DateRule = function(fieldName, displayText, required, minValue, maxVal
 		      msg = displayText + ' is not a valid date.'
 
 		    } else {
-		    	if (minValue && Validator.Date.isSmallerDate(fieldValue, minValue)) {
+		    	if (minValue && maxValue && (Validator.Date.isSmallerDate(fieldValue, minValue) || Validator.Date.isSmallerDate(maxValue, fieldValue))) {
+		    		code = ErrorCodes.MIN_VALUE_VIOLATED;
+		    		msg = displayText + ' must be between ' + minValue + ' and ' + maxValue;
+
+		    	} else if (minValue && Validator.Date.isSmallerDate(fieldValue, minValue)) {
 		    		code = ErrorCodes.MIN_VALUE_VIOLATED;
 		    		msg = displayText + ' must not be smaller than ' + minValue;
 
@@ -224,7 +238,7 @@ Validator.DateRule = function(fieldName, displayText, required, minValue, maxVal
 		    	}
 		    }
 		  }
-		  return Validator.buildErrorObject(code, msg, fieldName);
+		  return Validator.buildErrorObject(code, msg, fieldName, displayText);
 		}
 	};
 }
@@ -242,7 +256,7 @@ Validator.DateRangeRule = function(minFieldName, maxFieldName, displayText) {
 		  	code = ErrorCodes.INVALID_DATE_RANGE;
 		  	msg = displayText;
 		  }
-		  return Validator.buildErrorObject(code, msg);
+		  return Validator.buildErrorObject(code, msg, null, displayText);
 		}
 	};
 }
@@ -259,7 +273,7 @@ Validator.BooleanRule = function(fieldName, displayText) {
 		  	code = ErrorCodes.MANDATORY_FIELD;
 		    msg = displayText + ' is required.';
 		  }
-		  return Validator.buildErrorObject(code, msg, fieldName);
+		  return Validator.buildErrorObject(code, msg, fieldName, displayText);
 		}
 	};
 }
@@ -293,7 +307,7 @@ Validator.ArrayRule = function(fieldName, displayText, required, minLength, maxL
 					msg = 'Length of ' + displayText + ' must not be more than ' + maxLength + ' element(s).';
 				}
 			}
-			return Validator.buildErrorObject(code, msg, fieldName);
+			return Validator.buildErrorObject(code, msg, fieldName, displayText);
 		}
 	};
 }
@@ -325,7 +339,7 @@ Validator.CreditCardNumberRule = function(fieldName, displayText, required) {
 		      msg = displayText + ' is not valid format.';
 		    }
 		  }
-		  return Validator.buildErrorObject(code, msg, fieldName);
+		  return Validator.buildErrorObject(code, msg, fieldName, displayText);
 		}
 	};
 }
@@ -347,7 +361,7 @@ Validator.ObjectRule = function(fieldName, displayText, required) {
 				code = ErrorCodes.MANDATORY_FIELD;
 				msg = displayText + ' is required.';
 			}
-			return Validator.buildErrorObject(code, msg, fieldName);
+			return Validator.buildErrorObject(code, msg, fieldName, displayText);
 		}
 	}
 }
@@ -419,7 +433,7 @@ Validator.validate = function(obj, rules, returnAllErrors) {
 		    }
 		}
 	}
-
+	
 	if (errs && errs.length == 0) {
 		errs = undefined;
 	}

@@ -1,6 +1,6 @@
 {
   "name": "tc-validator",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "Validate entity",
   "main": "validator.js",
   "scripts": {
